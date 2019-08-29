@@ -1,42 +1,46 @@
-import os
 import sys
 
-repeats = []
-dic = dict()
-dbs = dict()
+fls = sys.argv[1:]
 
-for db in [d for d in os.listdir('.') if os.path.isdir(d)]:
-	dbs[db] = dict()
-	for fl in os.listdir(db):
-		dbs[db][fl] = 0
-		with open(db+'/'+fl,'r') as f:
-			for l in f.readlines():
-				if l[0] == '>':
-					dbs[db][fl] += 1
+repeated = ''
+out = ''
+seqs = dict()
 
-for db in dbs:
-	print(db)
-	for cl in dbs[db]:
-		print('\t'+cl+': '+str(dbs[db][cl]))
+def check_repeat(fl,header,seq):
+	if seq in seqs:
+		repeated += fl + '\t' + seqs[fl][seq].strip() + '\t' + fl + '\t' + header.strip() + '\n'
+	seqs[seq] = header
 
-"""
 for fl in fls:
 	with open(fl,'r') as f:
 		seq = ''
-		header = ''
-		for l in f.readlines():
+		for l in fl.readlines():
 			if l[0] == '>':
 				if seq != '':
-					if seq in dic:
-						repeats.append([dic[seq][-1],dic[seq][0],fl,header])
-					else:
-						dic[seq] = [header, fl]
-				seq = ''
+					check_repeat(fl,header,seq)
 				header = l
+				seq = ''
 			else:
-				seq += l.upper().strip()
-		if seq in dic:
-			repeats.append([dic[seq][-1],dic[seq][0],fl,header])
+				seq += l
+		check_repeat(fl,header,seq)
 
-for r in repeats
-"""
+for i in range(len(fls)):
+	for s in seqs[fls[i]]:
+		for j in range(len(fls)):
+			if i != j:
+				if s in seqs[fls[j]]:
+					repeated += fls[i] + '\t' + seqs[fls[i]][s].strip() + '\t' + fls[j] + '\t' + seqs[fls[j]][s].strip() + '\n'
+					if len(seqs[fls[i]]) > len(seqs[fls[j]]):
+						seqs[fls[i]].pop(s,None)
+					else:
+						seqs[fls[j]].pop(s,None)
+
+for fl in fls:
+	out = ''
+	for s in seqs[fl]:
+		out += seqs[fl][s] + s
+	with open(fl.split('.')[0]+'_UNIQUES.tsv','w+') as f:
+		f.write(out)
+
+with open('repeated_list.txt','w+') as f:
+	f.write(repeated)
