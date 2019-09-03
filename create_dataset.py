@@ -46,9 +46,12 @@ for s in args.classes:
 						seq += l
 				seqs[-1][1] = clr.subn('N',seq.upper())[0]
 	seqs = np.asarray(seqs)
-	samples = np.random.choice(len(seqs), args.train_size + args.test_size if len(seqs) > args.train_size + args.test_size else len(seqs), replace=False)
-	train = seqs[samples[:args.train_size]]
-	test = seqs[samples[args.train_size:]]
+	samples = np.random.choice(len(seqs),len(seqs),replace=False)
+	train = seqs[samples[0:args.train_size]]
+	test = seqs[samples[args.train_size:args.train_size+args.test_size]]
+	#samples = np.random.choice(len(seqs), args.train_size + args.test_size if len(seqs) > args.train_size + args.test_size else len(seqs), replace=False)
+	#train = seqs[samples[:-args.test_size]]
+	#test = seqs[samples[-args.test_size:]]
 
 	if len(train) > 1:
 		out = ''

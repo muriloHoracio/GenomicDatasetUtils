@@ -8,5 +8,5 @@ for fl in fls:
 		for l in f.readlines():
 			out += l
 	if len(fl.split('_'))> 1:
-		with open(fl.split('_')[0].split('.')[0]+'.fa','w+') as f:
+		with open(fl.split('_')[1].split('.')[0]+'.fa','w+') as f:
 			f.write(out)
