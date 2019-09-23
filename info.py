@@ -64,7 +64,7 @@ for db in [d for d in os.listdir('.') if os.path.isdir(d)]:
 header = 'Superfamily'
 for db in _bases:
 	header += ','+db
-header += '\n'
+header += ',Total\n'
 
 out = ''
 for s in _superfamilies:
