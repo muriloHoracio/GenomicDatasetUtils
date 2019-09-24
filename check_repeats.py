@@ -23,7 +23,7 @@ for folder in [fld for fld in os.listdir(root) if os.path.isdir(root+'/'+fld) an
 					seq = ''
 					header = l
 				else:
-					seq += l
+					seq += l.strip()
 			seq = seq.upper()
 			if seq in dic:
 				print('Repeat found: \n\t'+folder+'\t'+fl+'\t'+header+'\t'+'\t'.join(dic[seq]))
