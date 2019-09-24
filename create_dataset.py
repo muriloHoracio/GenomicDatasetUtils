@@ -21,66 +21,76 @@ print('Dataset path: '+args.dataset_path)
 
 if not os.path.exists(args.dataset_path):
 	os.mkdir(args.dataset_path)
-	if not os.path.exists(args.dataset_path+'/Train'):
-		os.mkdir(args.dataset_path+'/Train')
-	if not os.path.exists(args.dataset_path+'/Test'):
-		os.mkdir(args.dataset_path+'/Test')
-	if not os.path.exists(args.dataset_path+'/Headers'):
-		os.mkdir(args.dataset_path+'/Headers')
+if not os.path.exists(args.dataset_path+'/Train'):
+	os.mkdir(args.dataset_path+'/Train')
+if not os.path.exists(args.dataset_path+'/Test'):
+	os.mkdir(args.dataset_path+'/Test')
+if not os.path.exists(args.dataset_path+'/Headers'):
+	os.mkdir(args.dataset_path+'/Headers')
 
 clr = re.compile('[^ACGTN\n]')
 
-for s in args.classes:
-	seqs = []
+seqs_sampled = dict()
+for c in args.classes:
+	seqs_sampled[c] = []
 	for db in args.databases:
-		if os.path.exists(db+'/'+s+'.fa') and os.path.isfile(db+'/'+s+'.fa'):
-			with open(db+'/'+s+'.fa','r') as f:
-				seq = ''
+		if os.path.exists(db+'/'+c+'.fa') and os.path.isfile(db+'/'+c+'.fa'):
+			with open(db+'/'+c+'.fa','r') as f:
+				seq_counter = 0
 				for l in f.readlines():
 					if l[0] == '>':
-						if seq != '':
-							seqs[-1][1] = clr.subn('N',seq.upper())[0]
-						seqs.append([l,''])
+						seqs_sampled[c].append([db,seq_counter])
+						seq_counter += 1
+	seqs_sampled[c] = np.asarray(seqs_sampled[c])
+	if args.train_size + args.test_size > len(seqs_sampled[c]):
+		print("ERROR:\tTrain size and test size do not match the amount of sequences across the databases for class "+c)
+		exit(-1)
+	seqs_sampled[c] = seqs_sampled[c][np.random.choice(len(seqs_sampled[c]), args.train_size + args.test_size, replace=False)]
+	_seqs_sampled = sorted(seqs_sampled[c], key=lambda x: x[0])
+	seqs_sampled[c] = dict()
+	for db in args.databases:
+		seqs_sampled[c][db] = []
+	for i in _seqs_sampled:
+		seqs_sampled[c][i[0]].append(i[1])
+	del _seqs_sampled
+
+seqs = dict()
+headers = dict()
+
+for c in args.classes:
+	seqs[c] = []
+	headers[c] = []
+	for db in args.databases:
+		if os.path.exists(db+'/'+c+'.fa') and os.path.isfile(db+'/'+c+'.fa'):
+			with open(db+'/'+c+'.fa','r') as f:
+				seq = ''
+				header = ''
+				seq_counter = -1
+				for l in f.readlines():
+					if l[0] == '>':
+						if seq != '' and str(seq_counter) in seqs_sampled[c][db]:
+							seqs[c].append(clr.subn('N',seq.upper())[0])
+							headers[c].append(db+'\t'+header)
 						seq = ''
+						header = l
+						seq_counter += 1
 					else:
 						seq += l
-				seqs[-1][1] = clr.subn('N',seq.upper())[0]
-	seqs = np.asarray(seqs)
-	samples = np.random.choice(len(seqs),len(seqs),replace=False)
-	train = seqs[samples[0:args.train_size]]
-	test = seqs[samples[args.train_size:args.train_size+args.test_size]]
-	#samples = np.random.choice(len(seqs), args.train_size + args.test_size if len(seqs) > args.train_size + args.test_size else len(seqs), replace=False)
-	#train = seqs[samples[:-args.test_size]]
-	#test = seqs[samples[-args.test_size:]]
+				if str(seq_counter) in seqs_sampled[c][db]:
+					seqs[c].append(clr.subn('N',seq.upper())[0])
+					headers[c].append(db+'\t'+header)
+	out_seqs = ''
+	out_headers = ''
+	for i in range(args.train_size):
+		out_seqs += '>'+headers[c][i].split('>')[-1] + seqs[c][i]
+		out_headers += headers[c][i]
+	with open(args.dataset_path+'/Train/'+c+'.fa','w+') as f: f.write(out_seqs)
+	with open(args.dataset_path+'/Headers/'+c+'_train_headers.txt','w+') as f: f.write(out_headers)
 
-	if len(train) > 1:
-		out = ''
-		headers = ''
-		for t in train:
-			out += t[0]+t[1]
-			headers += t[0]
-		with open(args.dataset_path+'/Train/'+s+'.fa','w+') as f: f.write(out)
-		with open(args.dataset_path+'/Headers/'+s+'_Train_Headers.fa','w+') as f: f.write(headers)
-
-	if len(test) > 1:
-		out = ''
-		headers = ''
-		for t in test:
-			out += t[0]+t[1]
-			headers += t[0]
-		with open(args.dataset_path+'/Test/'+s+'.fa','w+') as f: f.write(out)
-		with open(args.dataset_path+'/Headers/'+s+'_Test_Headers.fa','w+') as f: f.write(headers)
-
-"""
-for fl in fls:
-	with open(fl,'r') as f:
-		_seqs = []
-		for l in f.readlines():
-			if l[0] == '>':
-				if seq != '':
-					_seqs[-1][1] = clr.subn('N',seq.upper())[0]
-				_seqs.append([l,''])
-				seq = ''
-			else:
-				seq += l		
-"""
+	out_seqs = ''
+	out_headers = ''
+	for i in range(args.train_size, args.train_size + args.test_size):
+		out_seqs += '>'+headers[c][i].split('>')[-1] + seqs[c][i]
+		out_headers += headers[c][i]
+	with open(args.dataset_path+'/Test/'+c+'.fa','w+') as f: f.write(out_seqs)
+	with open(args.dataset_path+'/Headers/'+c+'_test_headers.txt','w+') as f: f.write(out_headers)
