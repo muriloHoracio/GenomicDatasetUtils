@@ -5,11 +5,39 @@ import argparse
 import numpy as np
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-c', dest='classes', metavar='C', type=str, nargs='+', help='Classes that should compose the train and test sets. classes should be the name of the files that represent the class through the database folders, without extension. Exp: -c Copia Gypsy Bel-Pao. In each database that has these classes\' sequences, there should be the files Copia.fa, Gypsy.fa and Bel-Pao.fa')
-parser.add_argument('-db', dest='databases', metavar='DBs', type=str, nargs='+', help='Databases that should compose the train and test sets. Each database folder should contain the classes\' files. Exp: DPTE REPBASE PGSB')
-parser.add_argument('-tr', dest='train_size', metavar='train_size', type=int, help='Amount of sequences for each superfamily in the train set')
-parser.add_argument('-ts', dest='test_size', metavar='test_size', type=int, help='Amount of sequences for each superfamily in the test set')
-parser.add_argument('-ds', dest='dataset_path', metavar='dataset', type=str, help='Path to store the train and test sets')
+parser.add_argument(
+	'-c', 
+	dest='classes', 
+	metavar='C', 
+	type=str, 
+	nargs='+', 
+	help='Classes that should compose the train and test sets. classes should be the name of the files that represent the class through the database folders, without extension. Exp: -c Copia Gypsy Bel-Pao. In each database that has these classes\' sequences, there should be the files Copia.fa, Gypsy.fa and Bel-Pao.fa')
+parser.add_argument(
+	'-db', 
+	dest='databases', 
+	metavar='DBs', 
+	type=str, 
+	nargs='+', 
+	help='Databases that should compose the train and test sets. Each database folder should contain the classes\' files. Exp: DPTE REPBASE PGSB')
+parser.add_argument(
+	'-tr', 
+	dest='train_size', 
+	type=int, 
+	default=0,
+	help='Amount of sequences for each superfamily in the train set')
+parser.add_argument(
+	'-ts', 
+	dest='test_size', 
+	metavar='test_size', 
+	type=int, 
+	default=0,
+	help='Amount of sequences for each superfamily in the test set')
+parser.add_argument(
+	'-ds', 
+	dest='dataset_path', 
+	metavar='dataset', 
+	type=str, 
+	help='Path to store the train and test sets')
 
 args = parser.parse_args()
 
