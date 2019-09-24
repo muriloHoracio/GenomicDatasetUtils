@@ -79,18 +79,20 @@ for c in args.classes:
 				if str(seq_counter) in seqs_sampled[c][db]:
 					seqs[c].append(clr.subn('N',seq.upper())[0])
 					headers[c].append(db+'\t'+header)
-	out_seqs = ''
-	out_headers = ''
-	for i in range(args.train_size):
-		out_seqs += '>'+headers[c][i].split('>')[-1] + seqs[c][i]
-		out_headers += headers[c][i]
-	with open(args.dataset_path+'/Train/'+c+'.fa','w+') as f: f.write(out_seqs)
-	with open(args.dataset_path+'/Headers/'+c+'_train_headers.txt','w+') as f: f.write(out_headers)
+	if args.train_size > 0:
+		out_seqs = ''
+		out_headers = ''
+		for i in range(args.train_size):
+			out_seqs += '>'+headers[c][i].split('>')[-1] + seqs[c][i]
+			out_headers += headers[c][i]
+		with open(args.dataset_path+'/Train/'+c+'.fa','w+') as f: f.write(out_seqs)
+		with open(args.dataset_path+'/Headers/'+c+'_train_headers.txt','w+') as f: f.write(out_headers)
 
-	out_seqs = ''
-	out_headers = ''
-	for i in range(args.train_size, args.train_size + args.test_size):
-		out_seqs += '>'+headers[c][i].split('>')[-1] + seqs[c][i]
-		out_headers += headers[c][i]
-	with open(args.dataset_path+'/Test/'+c+'.fa','w+') as f: f.write(out_seqs)
-	with open(args.dataset_path+'/Headers/'+c+'_test_headers.txt','w+') as f: f.write(out_headers)
+	if args.test_size > 0:
+		out_seqs = ''
+		out_headers = ''
+		for i in range(args.train_size, args.train_size + args.test_size):
+			out_seqs += '>'+headers[c][i].split('>')[-1] + seqs[c][i]
+			out_headers += headers[c][i]
+		with open(args.dataset_path+'/Test/'+c+'.fa','w+') as f: f.write(out_seqs)
+		with open(args.dataset_path+'/Headers/'+c+'_test_headers.txt','w+') as f: f.write(out_headers)
